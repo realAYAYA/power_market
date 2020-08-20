@@ -7,15 +7,16 @@
 
 import scrapy
 
-
-class aemoItem(scrapy.Item):
+class EVNtableItem(scrapy.Item):
     title = scrapy.Field()
-    pub_time = scrapy.Field()
-    article_content = scrapy.Field()
+    keys = scrapy.Field()
+    values = scrapy.Field()
+        
     pass
 
-class nordpoolgroupItem(scrapy.Item):
-    title = scrapy.Field()
-    pub_time = scrapy.Field()
-    article_content = scrapy.Field()
+class PdfItem(scrapy.Item):
+    itemname = scrapy.Field()
+    filename = scrapy.Field()
+    pdf_url = scrapy.Field()
+
     pass

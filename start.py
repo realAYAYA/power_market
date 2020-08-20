@@ -1,2 +1,2 @@
 from scrapy import cmdline
-cmdline.execute("scrapy crawl aemo2".split())
+cmdline.execute("scrapy crawl EVN".split())
