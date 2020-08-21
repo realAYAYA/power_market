@@ -66,8 +66,8 @@ DEFAULT_REQUEST_HEADERS = {
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    'power_market.pipelines.Pdf_Download_Pipeline': 300,
-    'power_market.pipelines.PowerMarketPipeline': 350,
+    'power_market.pipelines.PowerMarketPipeline': 300,
+    'power_market.pipelines.Pdf_Download_Pipeline': 350,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)

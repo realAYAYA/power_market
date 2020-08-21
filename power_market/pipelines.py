@@ -31,7 +31,7 @@ class PowerMarketPipeline:
             self.fp.close()
             return item
         else:
-            print('------ '+'Error, item parsing failed ------')
+            print('------ '+'Error, tableitem parsing failed ------')
 
     def close_spider(self,spider):
         print("------ Spiders end ------")
@@ -52,7 +52,7 @@ class Pdf_Download_Pipeline:
             self.fp.close()
             return item
         else:
-            print('------ '+'Error, item parsing failed ------')
+            print('------ '+'Error, pdfitem parsing failed ------')
 
 #    def pdfDownload(self,pdf_url,filename):
 #        path = "C:/Users/Downloads/cvx/" + filename
@@ -78,7 +78,7 @@ class Pdf_Download_Pipeline:
 
 
 # 异步管线
-class powerMarketPipeline(object):
+class MySQLPipeline(object):
     def __init__(self):
         dbparams = { #
             'host': '127.0.0.1',
