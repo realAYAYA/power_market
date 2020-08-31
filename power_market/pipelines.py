@@ -20,21 +20,21 @@ class PowerMarketPipeline:
         pass
 
     def open_spider(self,spiders):
-        print("------ Spiders beginning ------")
+        print("------ TablePipeline start ------")
 
     def process_item(self, item, spider):
         if isinstance(item,EVNtableItem):
-            print('&'*80)
-            self.fp = open("EVN_table.json",'wb')
+            self.fp = open(item['filename'],'wb')
             self.exporters = JsonLinesItemExporter(self.fp,ensure_ascii=False,encoding='utf-8')
             self.exporters.export_item(item)
             self.fp.close()
-            return item
         else:
-            print('------ '+'Error, tableitem parsing failed ------')
+            Type = str(type(item))
+            print('------ '+'Warnning, PowerMarketPipeline: ItemType('+ Type +') matched failed, so skip it. ------')
+        return item
 
     def close_spider(self,spider):
-        print("------ Spiders end ------")
+        print("------ TablePipeline end ------")
 
 class Pdf_Download_Pipeline:
     def __init__(self):
@@ -45,14 +45,14 @@ class Pdf_Download_Pipeline:
 
     def process_item(self, item, spider):
         if isinstance(item,PdfItem):
-            print('*'*80)
             self.fp = open(item['filename'],'wb')
             pdf = requests.get(item['pdf_url'])
             self.fp.write(pdf.content)
             self.fp.close()
-            return item
         else:
-            print('------ '+'Error, pdfitem parsing failed ------')
+            Type = str(type(item))
+            print('------ '+'Warnning, Pdf_Downloader_Pipeline: ItemType('+ Type +') matched failed, so skip it. ------')
+        return item
 
 #    def pdfDownload(self,pdf_url,filename):
 #        path = "C:/Users/Downloads/cvx/" + filename
@@ -78,36 +78,36 @@ class Pdf_Download_Pipeline:
 
 
 # 异步管线
-class MySQLPipeline(object):
-    def __init__(self):
-        dbparams = { #
-            'host': '127.0.0.1',
-            'port':3306,
-            'user':'root',
-            'password':'root',
-            'database':'PowerMarket',
-            'charset':'utf8',
-            'oursorclass':cursors.DictCursor
-        }
-        self.dppool = adbapi.ConnectionPool('pymysql',**dbparams)
-        self._sql = None
-
-    @property
-    def sql(self):
-        if not self._sql:
-            self._sql = """
-            insert into article(id,title,content,author,avatar,pub_time,origin_url,article_id) values(null,%s,%s,%s,%s,%s,%s,%s)
-            """
-            return self._sql
-        return self._sql
-
-    # 异步存储数据到MYSQL
-    def process_item(self,item,spider):
-        defer = self.dppool.runInteraction(self.insert_item,item)
-        defer.addErrback(self.handle_error,item,spider)
-
-    def insert_item(self,cursor,item):
-        cursor.execute(self.sql,(item['title'],item['content'],item['author'],item['avatar'],item['pub_time'],item['origin_url'],item['article_id']))
-
-    def handle_error(self,cursor,item):
-        pass
+#class MySQLPipeline(object):
+#    def __init__(self):
+#        dbparams = { #
+#            'host': '127.0.0.1',
+#            'port':3306,
+#            'user':'root',
+#            'password':'root',
+#            'database':'PowerMarket',
+#            'charset':'utf8',
+#            'oursorclass':cursors.DictCursor
+#        }
+#        self.dppool = adbapi.ConnectionPool('pymysql',**dbparams)
+#        self._sql = None
+#
+#    @property
+#    def sql(self):
+#        if not self._sql:
+#            self._sql = """
+#            insert into article(id,title,content,author,avatar,pub_time,origin_url,article_id) values(null,%s,%s,%s,%s,%s,%s,%s)
+#            """
+#            return self._sql
+#        return self._sql
+#
+#    # 异步存储数据到MYSQL
+#    def process_item(self,item,spider):
+#        defer = self.dppool.runInteraction(self.insert_item,item)
+#        defer.addErrback(self.handle_error,item,spider)
+#
+#    def insert_item(self,cursor,item):
+#        cursor.execute(self.sql,(item['title'],item['content'],item['author'],item['avatar'],item['pub_time'],item['origin_url'],item['article_id']))
+#
+#    def handle_error(self,cursor,item):
+#        pass

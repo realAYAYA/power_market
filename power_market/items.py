@@ -8,10 +8,10 @@
 import scrapy
 
 class EVNtableItem(scrapy.Item):
+    filename = scrapy.Field()
     title = scrapy.Field()
     keys = scrapy.Field()
     values = scrapy.Field()
-        
     pass
 
 class PdfItem(scrapy.Item):
