@@ -9,3 +9,4 @@ Spiders for power websites
 3.运行方式为:
     cd power_market
     运行start.py
+    输入爬虫序号，总共有7个境外网站

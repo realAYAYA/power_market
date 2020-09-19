@@ -7,16 +7,18 @@
 
 import scrapy
 
-class EVNtableItem(scrapy.Item):
-    filename = scrapy.Field()
-    title = scrapy.Field()
-    keys = scrapy.Field()
-    values = scrapy.Field()
+# CurrentItem include Text,Link,Table
+class CurrentItem(scrapy.Item):
+    id = scrapy.Field()
+    content = scrapy.Field()
     pass
 
 class PdfItem(scrapy.Item):
-    itemname = scrapy.Field()
-    filename = scrapy.Field()
+    id = scrapy.Field()
     pdf_url = scrapy.Field()
+    pass
 
+class PicItem(scrapy.Item):
+    id = scrapy.Field()
+    url = scrapy.Field()
     pass

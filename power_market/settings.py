@@ -66,8 +66,9 @@ DEFAULT_REQUEST_HEADERS = {
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    'power_market.pipelines.PowerMarketPipeline': 300,
-    'power_market.pipelines.Pdf_Download_Pipeline': 350,
+    #'power_market.pipelines.PowerMarketPipeline': 300,
+    #'power_market.pipelines.Pdf_Download_Pipeline': 350,
+    'power_market.pipelines.MySQLPipeline':350
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
@@ -90,3 +91,13 @@ ITEM_PIPELINES = {
 #HTTPCACHE_DIR = 'httpcache'
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
+
+# MySQL Config
+config={
+    'host': '127.0.0.1',
+    'port':3306,
+    'user':'root',
+    'password':'123456',
+    'database':'news_cache',
+    'charset':'utf8',
+}
