@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import scrapy
 from power_market.items import PdfItem
-from power_market.items import EVNtableItem
+from power_market.items import CurrentItem
 
 
 class EgatSpider(scrapy.Spider):
@@ -19,7 +19,7 @@ class EgatSpider(scrapy.Spider):
             if "statistical" in url:
                 yield scrapy.Request(url,callback=self.table_grab)
             
-        yield scrapy.Request(self.pdf_urls,callback=self.pdf_grab) # 抓取pdf
+        #yield scrapy.Request(self.pdf_urls,callback=self.pdf_grab) # 抓取pdf
 
     def pdf_grab(self,response):
         urls = response.xpath('///*[@id="main-content"]//@href').getall()
@@ -27,7 +27,7 @@ class EgatSpider(scrapy.Spider):
         for pdf_url in urls:
             if ".pdf" in pdf_url: # 筛选还有.pdf的链接
                 filename = str(pdf_url[-11:])
-                item = PdfItem(itemname="pdf",filename=filename,pdf_url=pdf_url)
+                item = PdfItem(filename=filename,pdf_url=pdf_url)
                 self.count = self.count+1 # 下载计数+1
                 yield item
 
@@ -35,13 +35,15 @@ class EgatSpider(scrapy.Spider):
         title = response.xpath('//*[@id="main-content"]/div[2]/div/h1/text()').get() # 标题
         filename = "".join(title) + ".json"
         tables = response.xpath('//*[@id="main-content"]/div[2]/div/table/tbody/tr') # 表格
-        keys = [] # 放到一个list序列中
+        #keys = [] # 放到一个list序列中
         values = []
         for table in tables:
             tds = table.xpath('td')
-            keys.append(tds[0].xpath('text()').get()) # 列键
-            values.append(tds[1].xpath('text()').get()) #列值
-            if(tds[2]):
-                values.append(tds[2].xpath('text()').get()) #列值
-        item = EVNtableItem(filename=filename,title=title,keys=keys,values=values)
+            for td in tds:
+                values.append(td.xpath('text()').get())
+            #keys.append(tds[0].xpath('text()').get()) # 列键
+            #values.append(tds[1].xpath('text()').get()) #列值
+            #if(tds[2]):
+                #values.append(tds[2].xpath('text()').get()) #列值
+        item = CurrentItem(id=filename,content=values)
         yield item

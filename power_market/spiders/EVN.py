@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import scrapy
-from power_market.items import EVNtableItem
+from power_market.items import CurrentItem
 from power_market.items import PdfItem
 
 
@@ -28,7 +28,7 @@ class EvnSpider(scrapy.Spider):
         for pdf_url in urls:
             if ".pdf" in pdf_url: # 筛选还有.pdf的链接
                 filename = str(pdf_url[-10:])
-                item = PdfItem(itemname="pdf",filename=filename,pdf_url=pdf_url)
+                item = PdfItem(filename=filename,pdf_url=pdf_url)
                 self.count = self.count+1 # 下载计数+1
                 yield item
 
@@ -36,11 +36,14 @@ class EvnSpider(scrapy.Spider):
         title = response.xpath('//span[@id="ContentPlaceHolder1_ctl00_1391_ltlTitle"]/text()').get() # 标题
         filename = "".join(title) + ".json"
         tables = response.xpath('//div[@class="blog margin-bottom-40 content-detail"]//tbody/tr') # 表格
-        keys = [] # 放到一个list序列中
-        values = []
+        #keys = [] # 放到一个list序列中
+        values = ''
         for table in tables:
             tds = table.xpath('td')
-            keys.append(tds[0].xpath('p/text()').get()) # 列键
-            values.append(tds[1].xpath('p/text()').get()) #列值
-        item = EVNtableItem(filename=filename,title=title,keys=keys,values=values)
+            for td in tds:
+                values = values + "".join(td.xpath('p/text()').get()) + ','
+            values = values + ';'
+            #keys.append(tds[0].xpath('p/text()').get()) # 列键
+            #values.append(tds[1].xpath('p/text()').get()) #列值
+        item = CurrentItem(rename=filename,content=values)
         yield item
