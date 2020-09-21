@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 import scrapy
-import json
+
+from scrapy.http import Request, FormRequest
+from scrapy.selector import Selector
+from scrapy_splash.request import SplashRequest, SplashFormRequest
 
 from power_market.linkmysql import Element
 from power_market.linkmysql import GetListFromMySQL
@@ -8,17 +11,26 @@ from power_market.linkmysql import GetListFromMySQL
 from power_market.items import CurrentItem
 from power_market.items import PicItem
 
+lua_script = """
+	function main(splash, args)
+		splash:go(args.url)
+		splash:wait(args.wait)
+		splash:runjs("document.getElementByClassName('mod_trun_page clearfix mt20')[0].scrollIntoView(true)")
+		splash:wait(args.wait)
+		return splash:html()
+	end
+	"""
 
-class ManualspiderSpider(scrapy.Spider):
-    name = 'manualSpider'
+class SplashSpider(scrapy.Spider):
+    name = 'splash'
     allowed_domains = ['baidu.com']
-    start_urls = ['https://baidu.com/']
+    start_urls = ['http://baidu.com/']
 
     # Content - 数据内容，类型取决于Type
     Url = ''
     elements = []
 
-    def parse(self,response):
+    def parse(self, response):
         # 打开数据库，并读取数据，生成Elements数组
         self.elements = GetListFromMySQL()
         for element in self.elements:
@@ -27,20 +39,20 @@ class ManualspiderSpider(scrapy.Spider):
                 #self.allowed_domains.append(element.Xpath)# 添加允许域名，不然scrapy会过滤掉
                 self.elements.remove(element)
 
-        yield scrapy.Request(self.Url,callback=self.parse_detail,dont_filter=True)
-
+        yield SplashRequest(self.Url,callback=self.parse_detail,endpoint='execute',args={'lua_source':lua_script, 'images':0, 'wait':5},dont_filter=True)
+        pass
     def parse_detail(self,response):
         for element in self.elements:
             if element.Type == 'text':
-                yield ManualspiderSpider.GetText(self,response,element)
+                yield SplashSpider.GetText(self,response,element)
             elif element.Type == 'link':
-                yield ManualspiderSpider.GetLink(self,response,element)
+                yield SplashSpider.GetLink(self,response,element)
             elif element.Type == 'table':
-                yield ManualspiderSpider.GetTable(self,response,element)
+                yield SplashSpider.GetTable(self,response,element)
             elif element.Type == 'picture':
-                yield ManualspiderSpider.GetPicture(self,response,element)
+                yield SplashSpider.GetPicture(self,response,element)
             elif element.Type == 'video':
-                yield ManualspiderSpider.GetVideo(self,response,element)
+                yield SplashSpider.GetVideo(self,response,element)
             else:
                 item = CurrentItem(id=element.ID,content='Type input error.')
                 yield item
@@ -49,11 +61,6 @@ class ManualspiderSpider(scrapy.Spider):
     def GetText(self,response,element):
         if element.Single == 'true':
             text = response.xpath(element.Xpath+'/text()').get()
-            count = 0 #若xpath爬取失败，此计数器则将用来倒计时次数，尝试修改xpath
-            while (not text and count < 3):# 如果返回为空，则说明网页开发者工具下复制的xpath路径和网页源码不一样，里面还有动态加载的标签，尝试去掉
-                element.Xpath = element.Xpath.replace('/div','',1)
-                text = response.xpath(element.Xpath+'/text()').get()
-                count = count+1
             item = CurrentItem(id=element.ID,content=text)
             return item
         else:
@@ -65,11 +72,6 @@ class ManualspiderSpider(scrapy.Spider):
     def GetLink(self,response,element):
         if element.Single == 'true':
             link = response.xpath(element.Xpath+'/@href').get()
-            count = 0 #若xpath爬取失败，此计数器则将用来倒计时次数，尝试修改xpath
-            while (not link and count < 3):# 如果返回为空，则说明网页开发者工具下复制的xpath路径和网页源码不一样，里面还有动态加载的标签，尝试去掉
-                element.Xpath = element.Xpath.replace('/div','',1)
-                link = response.xpath(element.Xpath+'/@href').get()
-                count = count+1
             link = response.urljoin(link)
             item = CurrentItem(id=element.ID,content=link)
             return item
@@ -111,8 +113,5 @@ class ManualspiderSpider(scrapy.Spider):
             item = CurrentItem(id=element.ID,content=content)
             return item
     
-    def GetPDF(self,response,element):
-        pass
-
     def GetVideo(self,response,element):
         pass
